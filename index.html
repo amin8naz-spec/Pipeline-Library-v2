@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Amin Pipeline Library | Kazakhstan</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0a0c12;
+            color: #f0f3fa;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overflow-x: hidden;
+            touch-action: pan-y pinch-zoom;
+        }
+        .app-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #0f1117;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .header {
+            padding: 16px 16px 10px;
+            background: #1a1e2a;
+            border-bottom: 1px solid #2c313f;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .logo {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, #2b5f8a, #1e3a5f);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 34px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #eef2ff, #9ab3e0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .tab-bar {
+            display: flex;
+            background: #131720;
+            border-bottom: 1px solid #2c313f;
+            position: sticky;
+            top: 74px;
+            z-index: 9;
+        }
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px 0;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #8f9bb5;
+            touch-action: manipulation;
+        }
+        .tab.active {
+            color: white;
+            border-bottom: 3px solid #3b82f6;
+            background: #1e2434;
+        }
+        .tab-content {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+        }
+        .tab-content.active {
+            display: flex;
+        }
+        .breadcrumb {
+            padding: 12px 16px;
+            background: #131720;
+            border-bottom: 1px solid #252a36;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+        }
+        .crumb {
+            background: #1e2432;
+            padding: 6px 12px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .crumb:active {
+            background: #2d3445;
+        }
+        .separator {
+            color: #5b677e;
+        }
+        .action-bar {
+            padding: 12px 16px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #252a36;
+        }
+        button {
+            background: #2a2f3e;
+            border: none;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        button:active {
+            transform: scale(0.96);
+            background: #3e455a;
+        }
+        .btn-primary {
+            background: #2b5f8a;
+        }
+        .file-list {
+            flex: 1;
+            padding: 8px 12px 80px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .list-item {
+            background: #181e2a;
+            border-radius: 18px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            border: 1px solid #2a2f3e;
+        }
+        .list-item:active {
+            background: #222838;
+        }
+        .item-icon {
+            font-size: 32px;
+            width: 48px;
+            text-align: center;
+        }
+        .item-info {
+            flex: 1;
+        }
+        .item-name {
+            font-weight: 500;
+            word-break: break-word;
+        }
+        .item-meta {
+            font-size: 0.7rem;
+            color: #8f9bb5;
+            margin-top: 4px;
+        }
+        .item-actions span {
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+        }
+        .folder-item {
+            border-left: 4px solid #3b82f6;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #7f8aa8;
+        }
+        .folders-tree {
+            padding: 16px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .folder-node {
+            margin-left: 20px;
+            margin-top: 6px;
+        }
+        .folder-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: #181e2a;
+            border-radius: 20px;
+            margin-bottom: 6px;
+            cursor: pointer;
+        }
+        .folder-row:active {
+            background: #2a2f3e;
+        }
+        .folder-name {
+            flex: 1;
+            font-weight: 500;
+        }
+        .delete-folder-icon {
+            color: #e06c75;
+            font-size: 1.2rem;
+            padding: 5px;
+        }
+        .viewer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000000dd;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+        }
+        .viewer-header {
+            background: #0f1119;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .viewer-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            background: #1a1e2c;
+            padding: 4px 12px;
+            border-radius: 40px;
+        }
+        .zoom-btn {
+            background: #2b5f8a;
+            padding: 4px 12px;
+            font-size: 1.2rem;
+        }
+        .zoom-level {
+            min-width: 50px;
+            text-align: center;
+        }
+        .viewer-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .pdf-canvas-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        canvas {
+            max-width: 100%;
+            height: auto;
+            background: white;
+            box-shadow: 0 5px 20px black;
+            transition: transform 0.1s ease;
+        }
+        .word-excel-content {
+            background: #1a1e2c;
+            padding: 20px;
+            border-radius: 20px;
+            color: #eef2ff;
+            transition: transform 0.1s ease;
+            transform-origin: top left;
+        }
+        .footer-note-main {
+            text-align: center;
+            padding: 12px;
+            font-size: 0.7rem;
+            color: #6c779b;
+            border-top: 1px solid #252c3a;
+            background: #0a0e14;
+        }
+        /* стили для таблиц Excel */
+        .word-excel-content table {
+            border-collapse: collapse;
+            width: 100%;
+            color: #eef2ff;
+        }
+        .word-excel-content td, .word-excel-content th {
+            border: 1px solid #3e4a5e;
+            padding: 8px;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="header">
+        <div class="logo">🇰🇿</div>
+        <div class="title">Amin Pipeline Library</div>
+    </div>
+    <div class="tab-bar">
+        <div class="tab active" data-tab="list">📄 Список</div>
+        <div class="tab" data-tab="folders">📁 Папки</div>
+    </div>
+
+    <div id="tab-list" class="tab-content active">
+        <div class="breadcrumb" id="breadcrumb"></div>
+        <div class="action-bar">
+            <button id="uploadBtn">📂 Загрузить файл</button>
+            <input type="file" id="fileInput" multiple accept=".pdf,.docx,.doc,.xlsx,.xls" style="display:none" />
+        </div>
+        <div class="file-list" id="fileList"></div>
+    </div>
+
+    <div id="tab-folders" class="tab-content">
+        <div class="action-bar">
+            <button id="createFolderBtnFolders" class="btn-primary">➕ Создать папку</button>
+        </div>
+        <div class="folders-tree" id="foldersTree"></div>
+    </div>
+
+    <div class="footer-note-main">Pipeline, Karabatan 2026</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.4.21/mammoth.browser.min.js"></script>
+<script>
+    // ---------- Офлайн-хранилище (IndexedDB) для файлов, папок и прогресса ----------
+    const DB_NAME = 'AminPipelineDB';
+    const DB_VERSION = 8;
+    let db = null;
+
+    function openDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, DB_VERSION);
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => {
+                db = request.result;
+                initRootFolder().then(() => resolve(db)).catch(reject);
+            };
+            request.onupgradeneeded = (event) => {
+                const dbRef = event.target.result;
+                if (!dbRef.objectStoreNames.contains('files')) {
+                    const fileStore = dbRef.createObjectStore('files', { keyPath: 'id' });
+                    fileStore.createIndex('path', 'path', { unique: false });
+                }
+                if (!dbRef.objectStoreNames.contains('folders')) {
+                    dbRef.createObjectStore('folders', { keyPath: 'path' });
+                }
+                if (!dbRef.objectStoreNames.contains('progress')) {
+                    dbRef.createObjectStore('progress', { keyPath: 'fileId' });
+                }
+            };
+        });
+    }
+
+    async function initRootFolder() {
+        const tx = db.transaction('folders', 'readwrite');
+        const store = tx.objectStore('folders');
+        const root = await new Promise(resolve => {
+            const req = store.get('');
+            req.onsuccess = () => resolve(req.result);
+        });
+        if (!root) store.put({ path: '', name: 'Корень', parent: null });
+        return new Promise(resolve => tx.oncomplete = resolve);
+    }
+
+    // ----- Работа с папками -----
+    async function getFolders() {
+        const store = db.transaction('folders', 'readonly').objectStore('folders');
+        const all = await new Promise(resolve => {
+            const res = [];
+            store.openCursor().onsuccess = (e) => {
+                const c = e.target.result;
+                if(c) { res.push(c.value); c.continue(); }
+                else resolve(res);
+            };
+        });
+        return all;
+    }
+
+    async function createFolder(parentPath, folderName) {
+        const newPath = parentPath === '' ? folderName : `${parentPath}/${folderName}`;
+        const folders = await getFolders();
+        if (folders.some(f => f.path === newPath)) throw new Error('Папка уже существует');
+        const tx = db.transaction('folders', 'readwrite');
+        tx.objectStore('folders').put({ path: newPath, name: folderName, parent: parentPath });
+        return newPath;
+    }
+
+    async function deleteFolderRecursive(folderPath) {
+        const files = await getFilesInFolder(folderPath);
+        for (const f of files) await deleteFile(f.id);
+        const subFolders = await getSubFolders(folderPath);
+        for (const sf of subFolders) await deleteFolderRecursive(sf.path);
+        const tx = db.transaction('folders', 'readwrite');
+        tx.objectStore('folders').delete(folderPath);
+    }
+
+    async function getSubFolders(parentPath) {
+        const folders = await getFolders();
+        return folders.filter(f => f.parent === parentPath);
+    }
+
+    // ----- Работа с файлами -----
+    async function getFilesInFolder(folderPath) {
+        const store = db.transaction('files', 'readonly').objectStore('files');
+        const index = store.index('path');
+        return new Promise(resolve => {
+            const files = [];
+            index.openCursor(IDBKeyRange.only(folderPath)).onsuccess = (e) => {
+                const c = e.target.result;
+                if(c) { files.push(c.value); c.continue(); }
+                else resolve(files);
+            };
+        });
+    }
+
+    async function addFileBlob(name, type, path, blob, ext) {
+        const id = Date.now() + '-' + Math.random().toString(36) + '-' + performance.now();
+        const fileData = { id, name, type, path, blob, ext, uploadedAt: Date.now() };
+        const tx = db.transaction('files', 'readwrite');
+        tx.objectStore('files').put(fileData);
+        const progTx = db.transaction('progress', 'readwrite');
+        progTx.objectStore('progress').put({ fileId: id, progressData: { page: 0, scroll: 0, zoom: 1 } });
+        return id;
+    }
+
+    async function deleteFile(fileId) {
+        const tx = db.transaction(['files', 'progress'], 'readwrite');
+        tx.objectStore('files').delete(fileId);
+        tx.objectStore('progress').delete(fileId);
+    }
+
+    async function updateProgress(fileId, progressObj) {
+        const tx = db.transaction('progress', 'readwrite');
+        const store = tx.objectStore('progress');
+        const existing = await new Promise(resolve => {
+            const req = store.get(fileId);
+            req.onsuccess = () => resolve(req.result);
+        });
+        const merged = { ...(existing?.progressData || {}), ...progressObj };
+        store.put({ fileId, progressData: merged });
+    }
+
+    async function getProgress(fileId) {
+        const store = db.transaction('progress', 'readonly').objectStore('progress');
+        const res = await new Promise(resolve => {
+            const req = store.get(fileId);
+            req.onsuccess = () => resolve(req.result);
+        });
+        return res ? res.progressData : { page: 0, scroll: 0, zoom: 1 };
+    }
+
+    // ----- UI состояния для вкладки "Список" -----
+    let currentPath = '';
+    let currentFiles = [];
+
+    const fileListDiv = document.getElementById('fileList');
+    const breadcrumbDiv = document.getElementById('breadcrumb');
+
+    async function refreshCurrentPath() {
+        if (!db) return;
+        currentFiles = await getFilesInFolder(currentPath);
+        renderFileList();
+        renderBreadcrumb();
+    }
+
+    function renderFileList() {
+        fileListDiv.innerHTML = '';
+        if (currentFiles.length === 0) {
+            fileListDiv.innerHTML = '<div class="empty-state">📄 Нет файлов. Загрузите PDF, Word или Excel.</div>';
+            return;
+        }
+        for (let file of currentFiles) {
+            const icon = getFileIcon(file.name);
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            div.innerHTML = `
+                <div class="item-icon">${icon}</div>
+                <div class="item-info">
+                    <div class="item-name">${escapeHtml(file.name)}</div>
+                    <div class="item-meta">${file.type} • ${new Date(file.uploadedAt).toLocaleDateString()}</div>
+                </div>
+                <div class="item-actions"><span class="delete-file" data-id="${file.id}">🗑️</span></div>
+            `;
+            div.addEventListener('click', (e) => {
+                if (e.target.classList.contains('delete-file')) return;
+                openFileViewer(file);
+            });
+            div.querySelector('.delete-file').addEventListener('click', async (e) => {
+                e.stopPropagation();
+                if (confirm(`Удалить ${file.name}?`)) {
+                    await deleteFile(file.id);
+                    await refreshCurrentPath();
+                    await renderFoldersTree();
+                }
+            });
+            fileListDiv.appendChild(div);
+        }
+    }
+
+    function renderBreadcrumb() {
+        breadcrumbDiv.innerHTML = '';
+        const parts = currentPath === '' ? [] : currentPath.split('/');
+        let acc = '';
+        const rootCrumb = document.createElement('span');
+        rootCrumb.className = 'crumb';
+        rootCrumb.innerText = '📁 Корень';
+        rootCrumb.onclick = () => { currentPath = ''; refreshCurrentPath(); };
+        breadcrumbDiv.appendChild(rootCrumb);
+        for (let i = 0; i < parts.length; i++) {
+            const sep = document.createElement('span');
+            sep.className = 'separator';
+            sep.innerText = ' › ';
+            breadcrumbDiv.appendChild(sep);
+            acc = acc === '' ? parts[i] : acc + '/' + parts[i];
+            const crumb = document.createElement('span');
+            crumb.className = 'crumb';
+            crumb.innerText = parts[i];
+            crumb.onclick = (function(p) { return () => { currentPath = p; refreshCurrentPath(); }; })(acc);
+            breadcrumbDiv.appendChild(crumb);
+        }
+    }
+
+    // ----- Дерево папок для вкладки "Папки" -----
+    async function renderFoldersTree() {
+        const container = document.getElementById('foldersTree');
+        if (!container) return;
+        const allFolders = await getFolders();
+        const buildTree = (parentPath, level = 0) => {
+            const children = allFolders.filter(f => f.parent === parentPath && f.path !== parentPath);
+            return children.map(folder => {
+                const nodeDiv = document.createElement('div');
+                nodeDiv.className = 'folder-node';
+                nodeDiv.style.marginLeft = `${level * 20}px`;
+                nodeDiv.innerHTML = `
+                    <div class="folder-row" data-path="${folder.path}">
+                        <span>📁</span>
+                        <span class="folder-name">${escapeHtml(folder.name)}</span>
+                        <span class="delete-folder-icon" data-path="${folder.path}">🗑️</span>
+                    </div>
+                `;
+                const row = nodeDiv.querySelector('.folder-row');
+                row.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('delete-folder-icon')) return;
+                    currentPath = folder.path;
+                    refreshCurrentPath();
+                    activateTab('list');
+                });
+                const delBtn = nodeDiv.querySelector('.delete-folder-icon');
+                delBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    if (confirm(`Удалить папку "${folder.name}" со всем содержимым?`)) {
+                        await deleteFolderRecursive(folder.path);
+                        await renderFoldersTree();
+                        if (currentPath === folder.path) {
+                            currentPath = '';
+                            await refreshCurrentPath();
+                        } else {
+                            await refreshCurrentPath();
+                        }
+                    }
+                });
+                const childrenContainer = buildTree(folder.path, level + 1);
+                childrenContainer.forEach(ch => nodeDiv.appendChild(ch));
+                return nodeDiv;
+            });
+        };
+        container.innerHTML = '';
+        const rootNodes = buildTree('');
+        rootNodes.forEach(node => container.appendChild(node));
+        if (rootNodes.length === 0) container.innerHTML = '<div class="empty-state">📁 Нет папок. Создайте первую папку.</div>';
+    }
+
+    // ----- Просмотрщик документов с масштабированием и жестами -----
+    let currentViewerFile = null;
+    let viewerActive = false;
+    let pdfDoc = null;
+    let currentPage = 1;
+    let currentZoom = 1;
+    let currentContentElement = null; // canvas или div с контентом
+    let isPdf = false;
+
+    async function openFileViewer(file) {
+        currentViewerFile = file;
+        const blob = file.blob;
+        const ext = (file.name.split('.').pop() || '').toLowerCase();
+        const progress = await getProgress(file.id);
+        currentZoom = progress.zoom || 1;
+        const overlay = document.createElement('div');
+        overlay.className = 'viewer-overlay';
+        overlay.innerHTML = `
+            <div class="viewer-header">
+                <span><strong>${escapeHtml(file.name)}</strong></span>
+                <div class="viewer-controls">
+                    <button class="zoom-btn" id="zoomOutBtn">−</button>
+                    <span class="zoom-level" id="zoomLevel">${Math.round(currentZoom * 100)}%</span>
+                    <button class="zoom-btn" id="zoomInBtn">+</button>
+                    <button id="closeViewerBtn" style="background:#3e2a2f;">✕</button>
+                </div>
+            </div>
+            <div class="viewer-content" id="viewerContent"></div>
+        `;
+        document.body.appendChild(overlay);
+        viewerActive = true;
+        const contentDiv = document.getElementById('viewerContent');
+        
+        // Кнопки управления
+        document.getElementById('closeViewerBtn').onclick = () => closeViewerAndSave();
+        document.getElementById('zoomInBtn').onclick = () => changeZoom(0.2);
+        document.getElementById('zoomOutBtn').onclick = () => changeZoom(-0.2);
+        
+        try {
+            if (ext === 'pdf') {
+                isPdf = true;
+                await renderPdf(blob, contentDiv, progress, file.id);
+            } else if (ext === 'docx' || ext === 'doc') {
+                isPdf = false;
+                await renderDocx(blob, contentDiv, progress, file.id);
+            } else if (ext === 'xlsx' || ext === 'xls') {
+                isPdf = false;
+                await renderExcel(blob, contentDiv, progress, file.id);
+            } else {
+                contentDiv.innerHTML = '<div style="padding:2rem;">Неподдерживаемый формат</div>';
+            }
+        } catch(e) { contentDiv.innerHTML = `<div style="color:red;">Ошибка: ${e.message}</div>`; }
+
+        // Свайп для переключения между файлами
+        let touchStartX = 0;
+        contentDiv.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+        contentDiv.addEventListener('touchend', async (e) => {
+            const diff = e.changedTouches[0].screenX - touchStartX;
+            if (Math.abs(diff) > 70) {
+                const sibling = getSiblingFile(file, diff > 0 ? -1 : 1);
+                if (sibling) {
+                    await closeViewerAndSave(false);
+                    await openFileViewer(sibling);
+                }
+            }
+        });
+    }
+
+    async function changeZoom(delta) {
+        let newZoom = currentZoom + delta;
+        if (newZoom < 0.5) newZoom = 0.5;
+        if (newZoom > 3) newZoom = 3;
+        currentZoom = newZoom;
+        document.getElementById('zoomLevel').innerText = `${Math.round(currentZoom * 100)}%`;
+        if (isPdf && pdfDoc && currentContentElement) {
+            // перерисовка PDF с новым масштабом
+            await renderPDFPage(currentPage, currentContentElement);
+        } else if (currentContentElement) {
+            // для Word / Excel применяем CSS transform
+            currentContentElement.style.transform = `scale(${currentZoom})`;
+            currentContentElement.style.transformOrigin = 'top left';
+            // также обновим прогресс сохранения зума
+            if (currentViewerFile) await updateProgress(currentViewerFile.id, { zoom: currentZoom });
+        }
+        if (currentViewerFile) await updateProgress(currentViewerFile.id, { zoom: currentZoom });
+    }
+
+    async function renderPdf(blob, container, progress, fileId) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        const url = URL.createObjectURL(blob);
+        const pdf = await pdfjsLib.getDocument(url).promise;
+        pdfDoc = pdf;
+        const total = pdf.numPages;
+        let target = Math.min(progress.page || 1, total);
+        currentPage = target;
+        container.innerHTML = `<div class="pdf-canvas-container"><canvas id="pdfCanvas"></canvas><div style="margin:16px; display:flex; gap:12px;"><button id="prevPage">◀ Пред.</button><span>${currentPage}/${total}</span><button id="nextPage">След. ▶</button></div></div>`;
+        const canvas = document.getElementById('pdfCanvas');
+        currentContentElement = canvas;
+        const renderPage = async (num) => {
+            currentPage = num;
+            await renderPDFPage(num, canvas);
+            document.querySelector('#prevPage + span').innerText = `${num}/${total}`;
+            await updateProgress(fileId, { page: num, zoom: currentZoom });
+        };
+        await renderPage(currentPage);
+        document.getElementById('prevPage').onclick = () => { if (currentPage > 1) renderPage(currentPage-1); };
+        document.getElementById('nextPage').onclick = () => { if (currentPage < total) renderPage(currentPage+1); };
+        URL.revokeObjectURL(url);
+    }
+
+    async function renderPDFPage(pageNum, canvas) {
+        const page = await pdfDoc.getPage(pageNum);
+        const viewport = page.getViewport({ scale: currentZoom });
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d');
+        await page.render({ canvasContext: ctx, viewport }).promise;
+    }
+
+    async function renderDocx(blob, container, progress, fileId) {
+        const arrayBuffer = await blob.arrayBuffer();
+        const result = await mammoth.convertToHtml({ arrayBuffer });
+        const div = document.createElement('div');
+        div.className = 'word-excel-content';
+        div.innerHTML = result.value;
+        container.innerHTML = '';
+        container.appendChild(div);
+        currentContentElement = div;
+        div.style.transform = `scale(${currentZoom})`;
+        div.style.transformOrigin = 'top left';
+        if (progress.scroll) container.scrollTop = progress.scroll;
+        let timer;
+        container.addEventListener('scroll', () => { 
+            clearTimeout(timer); 
+            timer = setTimeout(() => updateProgress(fileId, { scroll: container.scrollTop, zoom: currentZoom }), 400);
+        });
+        // первичное сохранение зума
+        await updateProgress(fileId, { zoom: currentZoom });
+    }
+
+    async function renderExcel(blob, container, progress, fileId) {
+        const data = await blob.arrayBuffer();
+        const workbook = XLSX.read(data);
+        const html = XLSX.utils.sheet_to_html(workbook.Sheets[workbook.SheetNames[0]]);
+        const div = document.createElement('div');
+        div.className = 'word-excel-content';
+        div.innerHTML = html;
+        container.innerHTML = '';
+        container.appendChild(div);
+        currentContentElement = div;
+        div.style.transform = `scale(${currentZoom})`;
+        div.style.transformOrigin = 'top left';
+        if (progress.scroll) container.scrollTop = progress.scroll;
+        let timer;
+        container.addEventListener('scroll', () => { 
+            clearTimeout(timer); 
+            timer = setTimeout(() => updateProgress(fileId, { scroll: container.scrollTop, zoom: currentZoom }), 400);
+        });
+        await updateProgress(fileId, { zoom: currentZoom });
+    }
+
+    async function closeViewerAndSave(save = true) {
+        if (!viewerActive) return;
+        if (save && currentViewerFile) {
+            const contentDiv = document.getElementById('viewerContent');
+            if (contentDiv) {
+                const ext = (currentViewerFile.name.split('.').pop() || '').toLowerCase();
+                if (ext === 'pdf' && pdfDoc) {
+                    await updateProgress(currentViewerFile.id, { page: currentPage, zoom: currentZoom });
+                } else {
+                    await updateProgress(currentViewerFile.id, { scroll: contentDiv.scrollTop, zoom: currentZoom });
+                }
+            }
+        }
+        const ov = document.querySelector('.viewer-overlay');
+        if (ov) ov.remove();
+        viewerActive = false;
+        pdfDoc = null;
+    }
+
+    function getSiblingFile(current, dir) {
+        const idx = currentFiles.findIndex(f => f.id === current.id);
+        const newIdx = idx + dir;
+        if (newIdx >= 0 && newIdx < currentFiles.length) return currentFiles[newIdx];
+        return null;
+    }
+
+    // ----- Загрузка файлов (поддержка более 30 файлов) -----
+    async function handleUpload(files) {
+        for (const file of files) {
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (!['pdf','docx','doc','xlsx','xls'].includes(ext)) continue;
+            let type = ext === 'pdf' ? 'PDF' : (ext.startsWith('doc') ? 'Word' : 'Excel');
+            await addFileBlob(file.name, type, currentPath, file, ext);
+        }
+        await refreshCurrentPath();
+    }
+
+    // ----- Переключение вкладок -----
+    function activateTab(tabId) {
+        document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        document.querySelector(`.tab[data-tab="${tabId}"]`).classList.add('active');
+        document.getElementById(`tab-${tabId}`).classList.add('active');
+        if (tabId === 'folders') renderFoldersTree();
+    }
+
+    // ----- Инициализация событий -----
+    document.getElementById('uploadBtn').onclick = () => document.getElementById('fileInput').click();
+    document.getElementById('fileInput').onchange = (e) => { if(e.target.files.length) handleUpload(Array.from(e.target.files)); e.target.value=''; };
+    document.getElementById('createFolderBtnFolders').onclick = async () => {
+        const name = prompt('Название новой папки:');
+        if (name) {
+            try { await createFolder(currentPath, name); await renderFoldersTree(); await refreshCurrentPath(); } catch(e) { alert(e.message); }
+        }
+    };
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => activateTab(tab.dataset.tab));
+    });
+
+    // ----- Запуск приложения -----
+    openDB().then(async () => {
+        await refreshCurrentPath();
+        await renderFoldersTree();
+        activateTab('list');
+    }).catch(e => alert('Ошибка инициализации: ' + e.message));
+
+    function getFileIcon(name) { const e = name.split('.').pop().toLowerCase(); if(e==='pdf')return'📕'; if(e==='docx'||e==='doc')return'📘'; if(e==='xlsx'||e==='xls')return'📊'; return'📄'; }
+    function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
+</script>
+</body>
+</html>

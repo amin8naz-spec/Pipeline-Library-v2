@@ -1,0 +1,10 @@
+{
+  "name": "Amin Pipeline Library",
+  "short_name": "PipelineLib",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#0a0c12",
+  "background_color": "#0a0c12",
+  "orientation": "portrait",
+  "icons": []
+}
